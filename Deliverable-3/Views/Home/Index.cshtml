@@ -1,0 +1,78 @@
+@model IEnumerable<Car>
+@{
+    ViewData["Title"] = "Premium car rentals";
+    var cars = Model.ToList();
+}
+
+<section class="hero-section">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <div class="eyebrow"><span></span> YOUR JOURNEY, YOUR WAY</div>
+
+            <h1>Find the car<br>that moves <em>you.</em></h1>
+
+            <p class="hero-subtitle">
+                Premium rides, transparent daily rates, and a smoother way to get wherever life takes you.
+            </p>
+
+            <div class="hero-actions">
+                <a href="#fleet" class="btn btn-accent btn-lg">
+                    Explore our fleet <i class="bi bi-arrow-down-right ms-2"></i>
+                </a>
+
+                <div class="trust-note">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Simple booking<br><b>No hidden surprises</b></span>
+                </div>
+            </div>
+
+            <div class="hero-stats">
+                <div><strong>24/7</strong><small>Online booking</small></div>
+                <div><strong>3+</strong><small>Vehicle options</small></div>
+                <div><strong>100%</strong><small>Easy process</small></div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="hero-image"></div>
+        </div>
+    </div>
+</section>
+
+<section class="search-strip">
+    <div class="container search-panel">
+        <div class="search-heading"><span class="search-icon"><i class="bi bi-search"></i></span><div><b>Find your perfect ride</b><small>Search our available collection</small></div></div>
+        <div class="search-input-wrap"><i class="bi bi-car-front"></i><input id="carSearch" class="form-control" placeholder="Search Toyota, Honda, Prado..." autocomplete="off"></div>
+        <a href="#fleet" class="btn btn-dark px-4">Browse cars</a>
+    </div>
+</section>
+<section class="fleet-section" id="fleet">
+    <div class="container">
+        <div class="section-top"><div><div class="eyebrow">THE DRIVENOW COLLECTION</div><h2>Choose your <em>next ride.</em></h2><p>Well-maintained cars for daily plans, business trips and weekend escapes.</p></div><span class="fleet-count"><b id="carCount">@cars.Count</b> vehicles available</span></div>
+        <div id="carGrid" class="row g-4">@await Html.PartialAsync("_CarCards", cars)</div>
+        <div id="emptyCars" class="empty-state @(cars.Count == 0 ? "" : "d-none")"><i class="bi bi-car-front"></i><h4>No matching cars</h4><p>Try another car name.</p></div>
+    </div>
+</section>
+<section class="bottom-cta"><div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"><div><span class="eyebrow text-white-50">LET'S GET YOU MOVING</span><h2>Your next destination is waiting.</h2></div><a href="#fleet" class="btn btn-light btn-lg">Find a car <i class="bi bi-arrow-right ms-2"></i></a></div></section>
+@section Scripts {
+<script>
+$(function () {
+    let timer;
+    const searchUrl = '@Url.Action("SearchCars", "Home")';
+    $('#carSearch').on('input', function () {
+        clearTimeout(timer);
+        const term = $(this).val();
+        timer = setTimeout(() => {
+            $.get(searchUrl, { term })
+                .done(html => {
+                    $('#carGrid').html(html);
+                    const count = $('#carGrid .car-item').length;
+                    $('#carCount').text(count);
+                    $('#emptyCars').toggleClass('d-none', count !== 0);
+                })
+                .fail(() => $('#emptyCars').removeClass('d-none').find('p').text('Search failed. Please try again.'));
+        }, 250);
+    });
+});
+</script>
+}

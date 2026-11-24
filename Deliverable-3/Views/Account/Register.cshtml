@@ -1,0 +1,10 @@
+@{ ViewData["Title"] = "Create account"; }
+<section class="auth-page"><div class="container auth-wrap"><div class="auth-art"><div class="eyebrow text-white-50">JOIN THE JOURNEY</div><h1>Make room for<br><em>more adventures.</em></h1><p>Create your DriveNow customer account and book your next ride in just a few steps.</p><div class="auth-art-icon"><i class="bi bi-signpost-split-fill"></i></div><span class="auth-art-caption">YOUR RIDE. YOUR RULES.</span></div>
+<div class="surface-card auth-card"><div class="auth-logo"><i class="bi bi-person-plus"></i></div><h2>Create account</h2><p class="muted mb-4">It only takes a minute to get started.</p>
+@if (ViewBag.Error != null) { <div class="alert alert-danger">@ViewBag.Error</div> }
+<form method="post" asp-action="Register">
+    <div class="mb-3"><label class="form-label">Email address</label><div class="input-icon"><i class="bi bi-envelope"></i><input type="email" name="email" class="form-control" autocomplete="email" autocomplete="email" placeholder="you@example.com" required></div></div>
+    <div class="mb-4"><label class="form-label">Password</label><div class="input-icon"><i class="bi bi-lock"></i><input type="password" name="password" minlength="6" class="form-control" autocomplete="new-password" autocomplete="new-password" placeholder="At least 6 characters" required></div><small class="muted">Use at least 6 characters.</small></div>
+    <button class="btn btn-accent btn-lg w-100">Create my account <i class="bi bi-arrow-right ms-2"></i></button>
+</form><p class="auth-switch">Already have an account? <a asp-action="Login">Log in</a></p>
+</div></div></section>

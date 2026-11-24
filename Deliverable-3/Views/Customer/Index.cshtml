@@ -1,0 +1,12 @@
+﻿@model IEnumerable<Booking>
+@{ ViewData["Title"] = "My bookings"; var bookings = Model.ToList(); }
+<section class="page-hero"><div class="container"><div class="eyebrow">YOUR DRIVENOW ACCOUNT</div><h1>Your journeys, <em>all in one place.</em></h1><p>Track your reservations and revisit your booking details.</p></div></section>
+<div class="container content-overlap">
+    @if (TempData["Success"] != null) { <div class="alert alert-success border-0 shadow-sm"><i class="bi bi-check-circle me-2"></i>@TempData["Success"]</div> }
+    <div class="dashboard-heading"><div><h2>My bookings</h2><p class="muted">A quick overview of your rental history.</p></div><a asp-controller="Home" asp-action="Index" class="btn btn-dark">Explore cars <i class="bi bi-arrow-up-right ms-1"></i></a></div>
+    <div class="row g-3 mb-4"><div class="col-md-4"><div class="metric-card"><span>Total reservations</span><strong>@bookings.Count</strong><i class="bi bi-calendar2-check"></i></div></div><div class="col-md-4"><div class="metric-card"><span>Total rental days</span><strong>@bookings.Sum(b => b.Days)</strong><i class="bi bi-clock-history"></i></div></div><div class="col-md-4"><div class="metric-card"><span>Total spent</span><strong>Rs. @bookings.Sum(b => b.Car.Rate * b.Days).ToString("N0")</strong><i class="bi bi-wallet2"></i></div></div></div>
+    <div class="surface-card table-card"><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Booking</th><th>Vehicle</th><th>Daily rate</th><th>Duration</th><th>Total</th><th>Status</th></tr></thead><tbody>
+    @foreach (var b in bookings) { <tr><td><span class="booking-id">#DN-@b.Id.ToString("D4")</span></td><td><b>@b.Car.Name</b></td><td>Rs. @b.Car.Rate.ToString("N0")</td><td>@b.Days days</td><td><b>Rs. @((b.Car.Rate * b.Days).ToString("N0"))</b></td><td><span class="status-pill"><i></i> Confirmed</span></td></tr> }
+    @if (!bookings.Any()) { <tr><td colspan="6" class="text-center py-5"><i class="bi bi-car-front empty-icon"></i><h5>No bookings yet</h5><p class="muted">Your next journey starts with choosing a car.</p><a asp-controller="Home" asp-action="Index" class="btn btn-dark">Browse cars</a></td></tr> }
+    </tbody></table></div></div>
+</div>

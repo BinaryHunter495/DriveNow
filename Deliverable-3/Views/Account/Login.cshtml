@@ -1,0 +1,12 @@
+@{ ViewData["Title"] = "Log in"; }
+<section class="auth-page"><div class="container auth-wrap"><div class="auth-art"><div class="eyebrow text-white-50">WELCOME BACK</div><h1>Your next journey<br>starts <em>here.</em></h1><p>Sign in to manage your bookings and get back on the road.</p><div class="auth-art-icon"><i class="bi bi-car-front-fill"></i></div><span class="auth-art-caption">DRIVEN BY YOU. POWERED BY DRIVENOW.</span></div>
+<div class="surface-card auth-card"><div class="auth-logo"><i class="bi bi-steering-wheel"></i></div><h2>Welcome back</h2><p class="muted mb-4">Enter your details to access your account.</p>
+@if (ViewBag.Error != null) { <div class="alert alert-danger">@ViewBag.Error</div> }
+<form method="post" asp-action="Login">
+    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+    <div class="mb-3"><label class="form-label">Email address</label><div class="input-icon"><i class="bi bi-envelope"></i><input type="email" name="email" class="form-control" autocomplete="username" autocomplete="username" placeholder="you@example.com" required></div></div>
+    <div class="mb-4"><label class="form-label">Password</label><div class="input-icon"><i class="bi bi-lock"></i><input type="password" name="password" class="form-control" autocomplete="current-password" autocomplete="current-password" placeholder="Enter your password" required></div></div>
+    <button class="btn btn-accent btn-lg w-100">Log in <i class="bi bi-arrow-right ms-2"></i></button>
+</form><p class="auth-switch">New to DriveNow? <a asp-action="Register">Create an account</a></p>
+</div></div></section>

@@ -1,0 +1,78 @@
+@model IEnumerable<Car>
+@{ ViewData["Title"] = "Admin dashboard"; var stats = (AdminDashboardStats)ViewBag.Stats; var allBookings = (IEnumerable<Booking>)ViewBag.Bookings; }
+<section class="admin-banner"><div class="container d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3"><div><div class="eyebrow text-white-50">DRIVENOW CONTROL CENTER</div><h1>Fleet <em>management.</em></h1><p>Manage your vehicles and keep an eye on customer reservations.</p></div><span class="admin-badge"><i class="bi bi-shield-check"></i> Administrator access</span></div></section>
+<div class="container admin-content">
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="metric-card"><span>Fleet vehicles</span><strong id="fleetMetric">@stats.Cars</strong><i class="bi bi-car-front"></i></div></div>
+        <div class="col-md-4"><div class="metric-card"><span>Total bookings</span><strong>@stats.Bookings</strong><i class="bi bi-journal-check"></i></div></div>
+        <div class="col-md-4"><div class="metric-card"><span>Booking revenue</span><strong>Rs. @stats.Revenue.ToString("N0")</strong><i class="bi bi-graph-up-arrow"></i></div></div>
+    </div>
+    <div id="adminMessage" aria-live="polite"></div>
+    <div class="surface-card admin-panel mb-4">
+        <div class="panel-heading"><div><span class="eyebrow">VEHICLE INVENTORY</span><h2>Manage your fleet</h2><p class="muted">Add new vehicles or remove cars from the collection.</p></div><button class="btn btn-accent" data-bs-toggle="collapse" data-bs-target="#addCarForm"><i class="bi bi-plus-lg me-1"></i> Add vehicle</button></div>
+        <div class="collapse show" id="addCarForm"><form id="addCarFormElement" class="add-car-form" method="post" action="@Url.Action("AddCar", "Admin")">
+            @Html.AntiForgeryToken()
+            <div><label class="form-label" for="carName">Vehicle name</label><input id="carName" class="form-control" name="name" maxlength="80" placeholder="e.g. Toyota Yaris" required></div>
+            <div><label class="form-label" for="carRate">Daily rate (PKR)</label><input id="carRate" class="form-control" name="rate" type="number" min="1" placeholder="e.g. 5000" required></div>
+            <button class="btn btn-dark align-self-end" type="submit">Save vehicle <i class="bi bi-arrow-right ms-1"></i></button>
+        </form></div>
+        <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Vehicle</th><th>Daily rental rate</th><th>Action</th></tr></thead><tbody id="fleetRows">
+        @foreach (var car in Model) { <tr id="car-@car.Id"><td><span class="table-car-icon"><i class="bi bi-car-front"></i></span><b>@car.Name</b></td><td>Rs. @car.Rate.ToString("N0") / day</td><td><button type="button" class="btn btn-outline-danger btn-sm delete-car" data-id="@car.Id"><i class="bi bi-trash3 me-1"></i> Remove</button></td></tr> }
+        </tbody></table><div id="emptyFleet" class="text-center muted py-3 @(Model.Any() ? "d-none" : "")">No vehicles in the fleet yet.</div></div>
+    </div>
+    <div class="surface-card admin-panel">
+        <div class="panel-heading"><div><span class="eyebrow">CUSTOMER ACTIVITY</span><h2>All reservations</h2><p class="muted">Bookings placed by registered customers.</p></div><span class="fleet-count">@stats.Bookings total</span></div>
+        <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Booking ID</th><th>Customer</th><th>Vehicle</th><th>Days</th><th>Total amount</th></tr></thead><tbody>
+        @foreach (var b in allBookings) { <tr><td><span class="booking-id">#DN-@b.Id.ToString("D4")</span></td><td>@b.UserEmail</td><td><b>@b.Car.Name</b></td><td>@b.Days</td><td><b>Rs. @((b.Car.Rate * b.Days).ToString("N0"))</b></td></tr> }
+        @if (!allBookings.Any()) { <tr><td colspan="5" class="text-center py-4 muted">No reservations have been placed yet.</td></tr> }
+        </tbody></table></div>
+    </div>
+</div>
+@section Scripts {
+<script>
+$(function () {
+    const token = $('input[name="__RequestVerificationToken"]').first().val();
+    const addUrl = $('#addCarFormElement').attr('action');
+    const deleteUrl = '@Url.Action("DeleteCar", "Admin")';
+    const money = value => Number(value).toLocaleString('en-PK');
+    const showMessage = (text, type = 'success') => {
+        const safe = $('<div>').text(text).html();
+        $('#adminMessage').html(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">${safe}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`);
+    };
+
+    $('#addCarFormElement').on('submit', function (e) {
+        e.preventDefault();
+        const form = $(this);
+        const button = form.find('button[type="submit"]');
+        button.prop('disabled', true).text('Saving...');
+        $.post(addUrl, form.serialize())
+            .done(result => {
+                const safeName = $('<div>').text(result.name).html();
+                const row = `<tr id="car-${result.id}"><td><span class="table-car-icon"><i class="bi bi-car-front"></i></span><b>${safeName}</b></td><td>Rs. ${money(result.rate)} / day</td><td><button type="button" class="btn btn-outline-danger btn-sm delete-car" data-id="${result.id}"><i class="bi bi-trash3 me-1"></i> Remove</button></td></tr>`;
+                $('#fleetRows').prepend(row);
+                $('#emptyFleet').addClass('d-none');
+                $('#fleetMetric').text(Number($('#fleetMetric').text()) + 1);
+                form[0].reset();
+                showMessage(result.message);
+            })
+            .fail(xhr => showMessage(xhr.responseJSON?.message || 'Unable to add vehicle.', 'danger'))
+            .always(() => button.prop('disabled', false).html('Save vehicle <i class="bi bi-arrow-right ms-1"></i>'));
+    });
+
+    $(document).on('click', '.delete-car', function () {
+        if (!confirm('Remove this vehicle from the fleet?')) return;
+        const button = $(this);
+        const id = button.data('id');
+        button.prop('disabled', true);
+        $.ajax({ url: deleteUrl, method: 'POST', data: { id }, headers: { 'RequestVerificationToken': token } })
+            .done(result => {
+                $('#car-' + id).remove();
+                $('#fleetMetric').text(Math.max(0, Number($('#fleetMetric').text()) - 1));
+                if ($('#fleetRows tr').length === 0) $('#emptyFleet').removeClass('d-none');
+                showMessage(result.message);
+            })
+            .fail(xhr => { showMessage(xhr.responseJSON?.message || 'Unable to remove vehicle.', 'danger'); button.prop('disabled', false); });
+    });
+});
+</script>
+}

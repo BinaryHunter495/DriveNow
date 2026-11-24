@@ -1,0 +1,32 @@
+﻿@model Car
+@{ ViewData["Title"] = "Book " + Model.Name; }
+<section class="page-hero"><div class="container"><div class="eyebrow">RESERVE YOUR RIDE</div><h1>Almost time to <em>hit the road.</em></h1><p>Confirm your rental details below.</p></div></section>
+<div class="container content-overlap">
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-7"><div class="surface-card booking-form-card">
+            <a asp-controller="Home" asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i> Back to fleet</a>
+            <h2>Booking details</h2><p class="muted">Select how long you need this vehicle.</p>
+            <form asp-action="Book" method="post">
+                            <input type="hidden" name="id" value="@Model.Id">
+                <label class="form-label fw-semibold" for="days">Rental duration</label>
+                <div class="input-group input-group-lg duration-input"><input id="days" name="days" type="number" value="1" min="1" max="30" class="form-control" required><span class="input-group-text">days</span></div>
+                <span class="text-danger">@Html.ValidationMessage("days")</span>
+                <div class="booking-hint"><i class="bi bi-info-circle"></i> You can book this car for 1 to 30 days.</div>
+                <button class="btn btn-accent btn-lg w-100 mt-4" type="submit">Confirm booking <i class="bi bi-arrow-right ms-2"></i></button>
+            </form>
+        </div></div>
+        <div class="col-lg-4"><div class="surface-card summary-card"><span class="summary-label">YOUR SELECTED VEHICLE</span><div class="summary-car-icon"><i class="bi bi-car-front-fill"></i></div><h3>@Model.Name</h3><p class="muted">DriveNow Select • Daily rental</p><hr><div class="summary-line"><span>Daily rate</span><b>Rs. @Model.Rate.ToString("N0")</b></div><div class="summary-line"><span>Duration</span><b id="duration">1 day</b></div><div class="summary-total"><span>Estimated total</span><strong id="total">Rs. @Model.Rate.ToString("N0")</strong></div><small class="muted d-block mt-3">Final amount is calculated using the daily rate and selected rental days.</small></div></div>
+    </div>
+</div>
+@section Scripts {
+<script>
+$(function () {
+ const rate = @Model.Rate;
+ $('#days').on('input', function () {
+   const days = Math.max(1, Math.min(30, parseInt(this.value || '1')));
+   $('#duration').text(days + (days === 1 ? ' day' : ' days'));
+   $('#total').text('Rs. ' + (rate * days).toLocaleString());
+ });
+});
+</script>
+}
